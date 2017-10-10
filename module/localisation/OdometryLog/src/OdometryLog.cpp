@@ -27,80 +27,79 @@ namespace localisation {
     using utility::nubugger::graph;
     using namespace std::chrono;
     OdometryLog::OdometryLog(std::unique_ptr<NUClear::Environment> environment)
-        : Reactor(std::move(environment)),logFile(), logFilePath("odom_data.CSV") {
+        : Reactor(std::move(environment)), logFile(), logFilePath("odom_data.CSV") {
 
         on<Configuration>("OdometryLog.yaml").then([this](const Configuration& config) {
             // Use configuration here from file OdometryLog.yaml
             localisationOffset = config["localisationOffset"].as<arma::vec>();
-            logFilePath="odom_data.csv";
+            logFilePath        = "odom_data.csv";
         });
 
         on<Startup>().then("Leg Loads Logger Startup", [this]() {
-                logFile.open(logFilePath, std::ios::out | std::ios::binary);
+            logFile.open(logFilePath, std::ios::out | std::ios::binary);
 
-                if ((logFile.is_open() == true) && (logFile.good() == true)) {
-                    logFile << "Time, x_pos, y_pos, angle ,"
-                            << "RightHipPitchPosition, RightHipRollPosition, RightHipYawPosition,"
-                            << "LeftHipPitchPosition, LeftHipRollPosition,LeftHipYawPosition, "
-                            << "RightKneePosition, LeftKneePosition, "
-                            << "RightAnklePitchPosition, RightAnkleRollPosition ,RightAnkleYawPosition,"
-                            << "LeftAnklePitchPosition, LeftAnkleRollPosition, LeftAnkleYawPosition "
-                            std::endl;
-                }
+            /* get time , x, y, angle and leg positions from robot */
 
-                else {
-                    NUClear::log<NUClear::ERROR>("Failed to open log file '", logFilePath, "'.");
-                }
-            });
+            if ((logFile.is_open() == true) && (logFile.good() == true)) {
+                logFile << "Time, x_pos, y_pos, angle ,"
+                        << "RightHipPitchPosition, RightHipRollPosition, RightHipYawPosition,"
+                        << "LeftHipPitchPosition, LeftHipRollPosition,LeftHipYawPosition, "
+                        << "RightKneePosition, LeftKneePosition, "
+                        << "RightAnklePitchPosition, RightAnkleRollPosition ,RightAnkleYawPosition,"
+                        << "LeftAnklePitchPosition, LeftAnkleRollPosition, LeftAnkleYawPosition " std::endl;
+            }
 
-        on<Trigger<ButtonLeftDown>, Single, With<Sensors>, Sync<OdometryLog>>().then(
-            [this](const Sensors& sensors) {
-                NUClear::log("Localisation Orientation reset. This direction is now forward.");
-                emit(std::make_unique<Nod>(true));
-                Transform2D Trw    = Transform3D(convert<double, 4, 4>(sensors.world)).projectTo2D();
-                localisationOffset = Trw;
+            else {
+                NUClear::log<NUClear::ERROR>("Failed to open log file '", logFilePath, "'.");
+            }
+        });
 
-                if ((logFile.is_open() == true) && (logFile.good() == true)) {
-                    logFile << "Localisation Orientation reset This direction is now forward,"
-                            << Trw.x() << "," << trw.y() << "," << trw.angle() << ","
-                            <<"blank , blank , blank, blank, blank, blank , blank, blank, blank,"
-                            << "blank , blank, blank, blank, blank " << std::endl;
-
-                }
-                 else {
-                    NUClear::log<NUClear::ERROR>("Failed to open log file '", logFilePath, "'.");
-                }
-            });
+        on<Trigger<ButtonLeftDown>, Single, With<Sensors>, Sync<OdometryLog>>().then([this](const Sensors& sensors) {
+            NUClear::log("Localisation Orientation reset. This direction is now forward.");
+            emit(std::make_unique<Nod>(true));
+            Transform2D Trw    = Transform3D(convert<double, 4, 4>(sensors.world)).projectTo2D();
+            localisationOffset = Trw;
+            /* "blank" is to keep line length the same in the output csv*/
+            if ((logFile.is_open() == true) && (logFile.good() == true)) {
+                logFile << "Localisation Orientation reset This direction is now forward," << Trw.x() << "," << trw.y()
+                        << "," << trw.angle() << ","
+                        << "blank , blank , blank, blank, blank, blank , blank, blank, blank,"
+                        << "blank , blank, blank, blank, blank " << std::endl;
+            }
+            else {
+                NUClear::log<NUClear::ERROR>("Failed to open log file '", logFilePath, "'.");
+            }
+        });
 
 
         on<Trigger<Sensors>, Sync<OdometryLog>, Single>().then("Odometry Loc", [this](const Sensors& sensors) {
-
-              // If the file isn't open skip
-            if (!log_file.is_open()) {{
-                return;
-            }}
-                /* get current time */
+            /* save odometry info to csv type file */
+            // If the file isn't open skip
+            if (!log_file.is_open()) {
+                { return; }
+            }
+            /* get current time */
             auto timestamp = std::chrono::high_resolution_clock::now();
 
-                /* get current joint angles */
-            float RightHipPitchPosition   = sensors.servo[ServoID::R_HIP_PITCH].presentPosition;
-            float RightHipRollPosition   = sensors.servo[ServoID::R_HIP_ROLL].presentPosition;
+            /* get current joint angles */
+            float RightHipPitchPosition = sensors.servo[ServoID::R_HIP_PITCH].presentPosition;
+            float RightHipRollPosition  = sensors.servo[ServoID::R_HIP_ROLL].presentPosition;
             float RightHipYawPosition   = sensors.servo[ServoID::R_HIP_YAW].presentPosition;
 
-            float LeftHipPitchPosition    = sensors.servo[ServoID::L_HIP_PITCH].presentPosition;
-            float LeftHipRollPosition    = sensors.servo[ServoID::L_HIP_ROLL].presentPosition;
-            float LeftHipYawPosition    = sensors.servo[ServoID::L_HIP_YAW].presentPosition;
+            float LeftHipPitchPosition = sensors.servo[ServoID::L_HIP_PITCH].presentPosition;
+            float LeftHipRollPosition  = sensors.servo[ServoID::L_HIP_ROLL].presentPosition;
+            float LeftHipYawPosition   = sensors.servo[ServoID::L_HIP_YAW].presentPosition;
 
-            float RightKneePosition       = sensors.servo[ServoID::R_KNEE].presentPosition;
-            float LeftKneePosition        = sensors.servo[ServoID::L_KNEE].presentPosition;
+            float RightKneePosition = sensors.servo[ServoID::R_KNEE].presentPosition;
+            float LeftKneePosition  = sensors.servo[ServoID::L_KNEE].presentPosition;
 
             float RightAnklePitchPosition = sensors.servo[ServoID::R_ANKLE_PITCH].presentPosition;
-            float RightAnkleRollPosition = sensors.servo[ServoID::R_ANKLE_ROLL].presentPosition;
-            float RightAnkleYawPosition = sensors.servo[ServoID::R_ANKLE_YAW].presentPosition;
+            float RightAnkleRollPosition  = sensors.servo[ServoID::R_ANKLE_ROLL].presentPosition;
+            float RightAnkleYawPosition   = sensors.servo[ServoID::R_ANKLE_YAW].presentPosition;
 
-            float LeftAnklePitchPosition  = sensors.servo[ServoID::L_ANKLE_PITCH].presentPosition;
-            float LeftAnkleRollPosition = sensors.servo[ServoID::L_ANKLE_ROLL].presentPosition;
-            float LeftAnkleYawPosition = sensors.servo[ServoID::L_ANKLE_YAW].presentPosition;
+            float LeftAnklePitchPosition = sensors.servo[ServoID::L_ANKLE_PITCH].presentPosition;
+            float LeftAnkleRollPosition  = sensors.servo[ServoID::L_ANKLE_ROLL].presentPosition;
+            float LeftAnkleYawPosition   = sensors.servo[ServoID::L_ANKLE_YAW].presentPosition;
 
             /* get current x,y and angle values */
             Transform2D Trw = Transform3D(convert<double, 4, 4>(sensors.world)).projectTo2D();
@@ -111,19 +110,16 @@ namespace localisation {
             logFile << timestamp << "," << Trw.x() << "," << trw.y() << "," << trw.angle() << ","
                     << RightHipPitchPosition << "," << RightHipRollPosition << "," << RightHipYawPosition << ","
                     << LeftHipPitchPosition << "," << LeftHipRollPosition << "," << LeftHipYawPosition << ","
-                    << RightKneePosition << "," << LeftKneePosition << ","
-                    << RightAnklePitchPosition << "," << RightAnkleRollPosition << "," << RightAnkleYawPosition << ","
-                    << LeftAnklePitchPosition << "," << LeftAnkleRollPosition << "," << LeftAnkleYawPosition
-                    << std::endl;
-            });
+                    << RightKneePosition << "," << LeftKneePosition << "," << RightAnklePitchPosition << ","
+                    << RightAnkleRollPosition << "," << RightAnkleYawPosition << "," << LeftAnklePitchPosition << ","
+                    << LeftAnkleRollPosition << "," << LeftAnkleYawPosition << std::endl;
+        });
 
 
         on<Shutdown>().then("OdometryLog Shutdown", [this]() { logFile.close(); });
 
 
-     } // OdometryLog
-
-
+    }  // OdometryLog
 
 
 }  // namespace localisation
