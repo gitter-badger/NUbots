@@ -96,6 +96,8 @@ namespace motion {
             // clang-format on
             // Rotate input position from standard robot coords to foot coords
             // NUClear::log<NUClear::DEBUG>("Target Original\n", target);
+            // NUClear::log<NUClear::DEBUG>("Target Col\n", target.col(3));
+            // NUClear::log<NUClear::DEBUG>("inputCoordinatesToCalcCoordinates\n", inputCoordinatesToCalcCoordinates);
             arma::vec4 fourthColumn = inputCoordinatesToCalcCoordinates * target.col(3);
             target        = inputCoordinatesToCalcCoordinates * target * inputCoordinatesToCalcCoordinates.t();
             target.col(3) = fourthColumn;
