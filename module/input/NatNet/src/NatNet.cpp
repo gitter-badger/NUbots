@@ -320,7 +320,7 @@ namespace input {
         const char* ptr = &packet.data;
 
         uint32_t nModels = ReadData<uint32_t>::read(ptr, version);
-
+        log("N Models: ", nModels);
         for (uint32_t i = 0; i < nModels; ++i) {
             // Read the type
             uint32_t type = ReadData<uint32_t>::read(ptr, version);
@@ -329,19 +329,22 @@ namespace input {
             switch (type) {
                 // Marker Set
                 case 0: {
-                    MarkerSetModel m        = ReadData<MarkerSetModel>::read(ptr, version);
+                    MarkerSetModel m = ReadData<MarkerSetModel>::read(ptr, version);
+                    log("MarkerSet Body ID: ", m.name);
                     markerSetModels[m.name] = m;
                 } break;
 
                 // Rigid Body
                 case 1: {
-                    RigidBodyModel m      = ReadData<RigidBodyModel>::read(ptr, version);
+                    RigidBodyModel m = ReadData<RigidBodyModel>::read(ptr, version);
+                    log("Rigid Body ID: ", m.id);
                     rigidBodyModels[m.id] = m;
                 } break;
 
                 // Skeleton
                 case 2: {
-                    SkeletonModel m      = ReadData<SkeletonModel>::read(ptr, version);
+                    SkeletonModel m = ReadData<SkeletonModel>::read(ptr, version);
+                    log("Skeleton Body ID: ", m.id);
                     skeletonModels[m.id] = m;
                 } break;
 
