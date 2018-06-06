@@ -74,40 +74,41 @@ namespace behaviour {
                 PRIORITY = config["PRIORITY"].as<float>();
             });
 
-            on<Last<5, Trigger<Sensors>>, Single>([this](const std::list<std::shared_ptr<const Sensors>>& sensors) {
-                if (!falling && !sensors.empty() && fabs(sensors.back()->world(2, 2)) < FALLING_ANGLE) {
+            on<Last<5, Trigger<Sensors>>, Single>().then(
+                [this](const std::list<std::shared_ptr<const Sensors>>& sensors) {
+                    if (!falling && !sensors.empty() && fabs(sensors.back()->world(2, 2)) < FALLING_ANGLE) {
 
-                    // We might be falling, check the accelerometer
-                    double magnitude = 0;
+                        // We might be falling, check the accelerometer
+                        double magnitude = 0;
 
-                    for (const auto& sensor : sensors) {
-                        magnitude += arma::norm(convert<double, 3>(sensor->accelerometer), 2);
+                        for (const auto& sensor : sensors) {
+                            magnitude += arma::norm(convert<double, 3>(sensor->accelerometer), 2);
+                        }
+
+                        magnitude /= sensors.size();
+
+                        if (magnitude < FALLING_ACCELERATION) {
+                            falling = true;
+                            updatePriority(PRIORITY);
+                        }
                     }
+                    else if (falling) {
+                        // We might be recovered, check the accelerometer
+                        double magnitude = 0;
 
-                    magnitude /= sensors.size();
+                        for (const auto& sensor : sensors) {
+                            magnitude += arma::norm(convert<double, 3>(sensor->accelerometer), 2);
+                        }
 
-                    if (magnitude < FALLING_ACCELERATION) {
-                        falling = true;
-                        updatePriority(PRIORITY);
+                        magnitude /= sensors.size();
+
+                        // See if we recover
+                        if (magnitude > RECOVERY_ACCELERATION[0] && magnitude < RECOVERY_ACCELERATION[1]) {
+                            falling = false;
+                            updatePriority(0);
+                        }
                     }
-                }
-                else if (falling) {
-                    // We might be recovered, check the accelerometer
-                    double magnitude = 0;
-
-                    for (const auto& sensor : sensors) {
-                        magnitude += arma::norm(convert<double, 3>(sensor->accelerometer), 2);
-                    }
-
-                    magnitude /= sensors.size();
-
-                    // See if we recover
-                    if (magnitude > RECOVERY_ACCELERATION[0] && magnitude < RECOVERY_ACCELERATION[1]) {
-                        falling = false;
-                        updatePriority(0);
-                    }
-                }
-            });
+                });
 
             on<Trigger<Falling>>().then([this] { emit(std::make_unique<ExecuteScriptByName>(id, "Relax.yaml")); });
 
