@@ -19,6 +19,8 @@
 
 #include "HeadController.h"
 
+#include <cmath>
+
 #include "extension/Configuration.h"
 
 #include "message/behaviour/ServoCommand.h"
@@ -100,6 +102,17 @@ namespace motion {
             "Head Controller - Update Head Position",
             [this](const Sensors& sensors, const KinematicsModel& kinematicsModel) {
                 emit(graph("HeadController Goal Angles", goalAngles[0], goalAngles[1]));
+
+                // Limit at +-45 degrees
+                // TODO: Remove hack to fix jerky head behaviour
+                if (goalAngles[0] > M_PI or goalAngles[0] < -M_PI) {
+                    goalAngles[0] = 0;
+                }
+
+                if (goalAngles[1] > M_PI or goalAngles[1] < -M_PI) {
+                    goalAngles[1] = 0;
+                }
+
                 // P controller
                 currentAngles = p_gain * goalAngles + (1 - p_gain) * currentAngles;
 
