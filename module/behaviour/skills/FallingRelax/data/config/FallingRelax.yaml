@@ -1,6 +1,11 @@
 {
-	"FALLING_ANGLE" : 0.8,
+  # Angle on inclination of the Z axis from the horizon
+	"FALLING_ANGLE" : 0.5,
+
+  # Less than lower recovery accleeration limit
 	"FALLING_ACCELERATION" : 8,
+
+  # Lower and upper acceleration limits
 	"RECOVERY_ACCELERATION" : [9.5, 10.5],
 	"PRIORITY" : 90
 }

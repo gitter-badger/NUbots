@@ -76,6 +76,7 @@ namespace behaviour {
 
             on<Last<5, Trigger<Sensors>>, Single>().then(
                 [this](const std::list<std::shared_ptr<const Sensors>>& sensors) {
+
                     if (!falling && !sensors.empty() && fabs(sensors.back()->world(2, 2)) < FALLING_ANGLE) {
 
                         // We might be falling, check the accelerometer
