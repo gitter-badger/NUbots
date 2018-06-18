@@ -325,17 +325,22 @@ namespace vision {
                        const CameraParameters& cam,
                        std::shared_ptr<const ClassifiedImage> rawImage,
                        const LookUpTable& lut) {
+                    log("Timings:");
+                    auto ball_detect_start = NUClear::clock::now();
+
                     // We need to gather all points which have a confidence prediction of over MAX_PREDICT_THRESH
                     // Then BFS to all neighbouring points which have a confidence prediction of at least
                     // MIN_PREDICT_THRESH
                     // We then need to create ransac models for each of these 'clusters' to fit a circle
                     const auto& image = *rawImage;
 
-
-                    // log("Visual Mesh Triggered");
+                    // Time calculating clusters
+                    auto start_clustering_time = NUClear::clock::now();
 
                     // Get our coordinate clusters in camera space
                     std::vector<std::vector<arma::vec4>> clusters = findClusters(mesh, cam);
+
+                    log("\tClustering:", (NUClear::clock::now() - start_clustering_time).count());
 
                     if (print_mesh_debug) {
                         log("Number of clusters found:", clusters.size());
@@ -406,6 +411,9 @@ namespace vision {
                         // Cast raw image from classified image
                         auto pixelImage = const_cast<Image*>(image.image.get())->shared_from_this();
 
+                        // Time calculating greenness
+                        auto greenness_time = NUClear::clock::now();
+
                         for (const auto& point : cluster) {
                             // Calculate image space pixel coordinate of point
                             auto pixel = screenToImage(projectCamSpaceToScreen(point.head(3), cam),
@@ -432,10 +440,10 @@ namespace vision {
                             }
                         }
 
+                        log("\tGreenness:", (NUClear::clock::now() - greenness_time).count());
+
                         if (cluster.size() > 0) {
                             greenRatio = numGreen / float(cluster.size());
-                            // Log our green ratio
-                            log("Green ratio", greenRatio);
                         }
 
 
@@ -542,6 +550,9 @@ namespace vision {
                      *                  CLUSTERS DRAW              *
                      ***********************************************/
 
+                    // Time cluster drawing
+                    auto cluster_drawing_time = NUClear::clock::now();
+
                     if (draw_cluster) {
                         std::vector<
                             std::tuple<Eigen::Vector2i, Eigen::Vector2i, Eigen::Vector4d>,
@@ -571,9 +582,12 @@ namespace vision {
                                 lines.emplace_back(center.cast<int>(), point.cast<int>(), colour);
                             }
                         }
+                        log("\tCluster drawing:", (NUClear::clock::now() - cluster_drawing_time).count());
                         emit(utility::nusight::drawVisionLines(lines));
                     }
                     emit(std::move(balls));
+
+                    log("Entire detection time:", (NUClear::clock::now() - ball_detect_start).count());
                 });
     }
 }  // namespace vision

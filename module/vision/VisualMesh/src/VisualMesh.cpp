@@ -31,6 +31,7 @@ namespace vision {
         : Reactor(std::move(environment)), mesh_ptr(nullptr) {
 
         on<Configuration>("VisualMesh.yaml").then([this](const Configuration& config) {
+            auto vis_mesh_start = NUClear::clock::now();
             log("Loading visual mesh");
             network.clear();
 
@@ -67,7 +68,7 @@ namespace vision {
             draw_mesh   = config["debug"]["draw_mesh"].as<bool>();
             colour_type = config["debug"]["colour_type"].as<int>();
 
-            log("Finished loading visual mesh");
+            log("Finished loading visual mesh. Time taken:", (NUClear::clock::now() - vis_mesh_start).count());
         });
 
         // TODO: Recreate mesh when network configuration changes
@@ -149,6 +150,9 @@ namespace vision {
                 msg->coordinates.push_back({int(coord[0]), int(coord[1])});
             }
 
+            // Calculate time taken for drawing visual mesh
+            auto draw_start_time = NUClear::clock::now();
+
             if (draw_mesh) {
                 std::vector<std::tuple<Eigen::Vector2i, Eigen::Vector2i, Eigen::Vector4d>,
                             Eigen::aligned_allocator<std::tuple<Eigen::Vector2i, Eigen::Vector2i, Eigen::Vector4d>>>
@@ -184,6 +188,9 @@ namespace vision {
                         }
                     }
                 }
+
+                log("Visual Mesh Drawing:", (NUClear::clock::now() - draw_start_time).count());
+
                 emit(utility::nusight::drawVisionLines(lines));
             }
             emit(msg);
