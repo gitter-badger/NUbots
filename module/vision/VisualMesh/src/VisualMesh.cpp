@@ -68,7 +68,9 @@ namespace vision {
             draw_mesh   = config["debug"]["draw_mesh"].as<bool>();
             colour_type = config["debug"]["colour_type"].as<int>();
 
-            log("Finished loading visual mesh. Time taken:", (NUClear::clock::now() - vis_mesh_start).count());
+            log("Finished loading visual mesh. Time taken:",
+                (std::chrono::duration_cast<std::chrono::microseconds>(NUClear::clock::now() - vis_mesh_start))
+                    .count());
         });
 
         // TODO: Recreate mesh when network configuration changes
@@ -189,7 +191,10 @@ namespace vision {
                     }
                 }
 
-                log("Visual Mesh Drawing:", (NUClear::clock::now() - draw_start_time).count());
+                log("Visual Mesh Drawing:",
+                    (std::chrono::duration_cast<std::chrono::microseconds>(NUClear::clock::now() - draw_start_time))
+                        .count(),
+                    "μs");
 
                 emit(utility::nusight::drawVisionLines(lines));
             }

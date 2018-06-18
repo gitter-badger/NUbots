@@ -340,7 +340,11 @@ namespace vision {
                     // Get our coordinate clusters in camera space
                     std::vector<std::vector<arma::vec4>> clusters = findClusters(mesh, cam);
 
-                    log("\tClustering:", (NUClear::clock::now() - start_clustering_time).count());
+                    log("\tClustering:",
+                        (std::chrono::duration_cast<std::chrono::microseconds>(NUClear::clock::now()
+                                                                               - start_clustering_time)
+                             .count()),
+                        "μs");
 
                     if (print_mesh_debug) {
                         log("Number of clusters found:", clusters.size());
@@ -440,7 +444,11 @@ namespace vision {
                             }
                         }
 
-                        log("\tGreenness:", (NUClear::clock::now() - greenness_time).count());
+                        log("\tGreenness:",
+                            (std::chrono::duration_cast<std::chrono::microseconds>(NUClear::clock::now()
+                                                                                   - greenness_time)
+                                 .count()),
+                            "μs");
 
                         if (cluster.size() > 0) {
                             greenRatio = numGreen / float(cluster.size());
@@ -582,12 +590,20 @@ namespace vision {
                                 lines.emplace_back(center.cast<int>(), point.cast<int>(), colour);
                             }
                         }
-                        log("\tCluster drawing:", (NUClear::clock::now() - cluster_drawing_time).count());
+                        log("\tCluster drawing:",
+                            (std::chrono::duration_cast<std::chrono::microseconds>(NUClear::clock::now()
+                                                                                   - cluster_drawing_time)
+                                 .count()),
+                            "μs");
                         emit(utility::nusight::drawVisionLines(lines));
                     }
                     emit(std::move(balls));
 
-                    log("Entire detection time:", (NUClear::clock::now() - ball_detect_start).count());
+                    log("Entire detection time:",
+                        (std::chrono::duration_cast<std::chrono::microseconds>(NUClear::clock::now()
+                                                                               - ball_detect_start)
+                             .count()),
+                        "μs");
                 });
     }
 }  // namespace vision
