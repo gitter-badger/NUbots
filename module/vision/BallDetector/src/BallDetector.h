@@ -62,6 +62,12 @@ namespace vision {
         double green_radial_samples;
         double green_angular_samples;
 
+        // Storage for time statistics of ball detection
+        double min_time;
+        double max_time;
+        double total_time;
+        int num_frames_seen;
+
         arma::vec3 ball_angular_cov;
 
         utility::learning::KMeans kmeansClusterer;
