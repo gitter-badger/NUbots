@@ -221,7 +221,8 @@ namespace vision {
                             // Make sure our confidence is above the threshold
                             // Make sure we haven't visited the point before
                             if ((mesh.classifications.back().values[n[j] * dim] >= mesh_branch_confidence_threshold)
-                                && (n[j] != int(mesh.coordinates.size())) && (n[j] != 0)) {
+                                && (n[j] != int(mesh.coordinates.size()))
+                                && (n[j] != 0)) {
                                 if (visited_indices.find(n[j]) == visited_indices.end()) {
                                     search_queue.push(n[j]);  // Add to our BFS queue
                                 }
@@ -234,7 +235,8 @@ namespace vision {
                                     if ((visited_indices.find(l) == visited_indices.end())
                                         && (mesh.classifications.back().values[l * dim]
                                             >= mesh_branch_confidence_threshold)
-                                        && (l != int(mesh.coordinates.size())) && (l != 0)) {
+                                        && (l != int(mesh.coordinates.size()))
+                                        && (l != 0)) {
                                         edge = false;
                                     }
                                 }
@@ -562,10 +564,11 @@ namespace vision {
                     auto cluster_drawing_time = NUClear::clock::now();
 
                     if (draw_cluster) {
-                        std::vector<
-                            std::tuple<Eigen::Vector2i, Eigen::Vector2i, Eigen::Vector4d>,
-                            Eigen::aligned_allocator<std::tuple<Eigen::Vector2i, Eigen::Vector2i, Eigen::Vector4d>>>
-                            lines;
+                        std::
+                            vector<std::tuple<Eigen::Vector2i, Eigen::Vector2i, Eigen::Vector4d>,
+                                   Eigen::
+                                       aligned_allocator<std::tuple<Eigen::Vector2i, Eigen::Vector2i, Eigen::Vector4d>>>
+                                lines;
                         for (size_t i = 0; i < clusters.size(); ++i) {
 
                             arma::vec3 axis(arma::fill::zeros);
@@ -599,11 +602,15 @@ namespace vision {
                     }
                     emit(std::move(balls));
 
-                    log("Entire detection time:",
-                        (std::chrono::duration_cast<std::chrono::microseconds>(NUClear::clock::now()
-                                                                               - ball_detect_start)
-                             .count()),
-                        "μs");
+                    double curr_time =
+                        std::chrono::duration_cast<std::chrono::microseconds>(NUClear::clock::now() - ball_detect_start)
+                            .count();
+                    static double max_time = 0;
+                    if (max_time < curr_time) {
+                        max_time = curr_time;
+                    }
+                    log("Entire detection time:", curr_time, "μs");
+
                 });
     }
 }  // namespace vision
