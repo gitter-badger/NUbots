@@ -539,7 +539,7 @@ namespace motion {
 
         Transform2D uTorsoActual = uTorso.localToWorld({-kinematicsModel.leg.HIP_OFFSET_X, 0, 0});
         Transform3D torso =
-            arma::vec6({uTorsoActual.x(), uTorsoActual.y(), bodyHeight, 0, bodyTilt, uTorsoActual.angle()});
+            arma::vec6({uTorsoActual.x(), 0.5 * uTorsoActual.y(), bodyHeight, 0, bodyTilt, uTorsoActual.angle()});
 
         // Transform feet targets to be relative to the torso
         Transform3D leftFootTorso  = leftFoot.worldToLocal(torso);
