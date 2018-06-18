@@ -58,7 +58,8 @@ namespace behaviour {
             // , FALLING_ANGLE(0.0f)
             // , FALLING_ACCELERATION(0.0f)
             // , RECOVERY_ACCELERATION()
-            , PRIORITY(0.0f) {
+            , PRIORITY(0.0f)
+            , PRINT_DEBUG(false) {
 
             // do a little configurating
             on<Configuration>("FallingRelax.yaml").then([this](const Configuration& config) {
@@ -88,12 +89,22 @@ namespace behaviour {
                         }
                         falling_angle = std::acos(std::abs(falling_angle / sensors.size()));
 
-                        log(falling_angle, falling_threshold, gyro_mag);
-                        if (gyro_mag > ((2.0f * 9.8f / COM) * (1.0f - std::cos(falling_angle - falling_threshold)))) {
-                            log("value:",
-                                ((2.0f * 9.8f / COM) * (1.0f - std::cos(falling_angle - falling_threshold))),
-                                "<",
+                        if (PRINT_DEBUG) {
+                            log("Falling angle:",
+                                falling_angle,
+                                "Falling threshold:",
+                                falling_threshold,
+                                "Gyro magnitude:",
                                 gyro_mag);
+                        }
+
+                        if (gyro_mag > ((2.0f * 9.8f / COM) * (1.0f - std::cos(falling_angle - falling_threshold)))) {
+                            if (PRINT_DEBUG) {
+                                log("value:",
+                                    ((2.0f * 9.8f / COM) * (1.0f - std::cos(falling_angle - falling_threshold))),
+                                    "<",
+                                    gyro_mag);
+                            }
                             falling = true;
                             updatePriority(PRIORITY);
                         }

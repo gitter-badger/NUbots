@@ -16,3 +16,6 @@ FALLING_ACCELERATION: 8
 # Lower and upper acceleration limits
 RECOVERY_ACCELERATION: [9.5, 10.5]
 PRIORITY: 90
+
+# Turn on debug information
+PRINT_DEBUG: false

@@ -43,11 +43,12 @@ namespace behaviour {
             float COM;
             float falling_threshold;
 
-
             float FALLING_ACCELERATION;
             float ACC_DEVIATION_ANGLE;
             std::vector<float> RECOVERY_ACCELERATION;
             float PRIORITY;
+
+            bool PRINT_DEBUG;
 
             void updatePriority(const float& priority);
 
