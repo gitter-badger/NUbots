@@ -244,11 +244,11 @@ namespace motion {
             emit(std::make_unique<WalkConfigSaved>());
         });
 
-        generateStandScriptReaction = on<Trigger<Sensors>, Single>().then([this](const Sensors& /*sensors*/) {
+        generateStandScriptReaction = on<Trigger<Sensors>, Single>().then([this](const Sensors& sensors) {
             generateStandScriptReaction.disable();
-            // generateAndSaveStandScript(sensors);
-            // state = State::LAST_STEP;
-            // start();
+            generateAndSaveStandScript(sensors);
+            state = State::LAST_STEP;
+            start();
         });
 
         reset();
