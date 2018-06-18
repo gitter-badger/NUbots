@@ -202,6 +202,10 @@ namespace platform {
                     if (servo.voltage <= chargedVoltage) {
                         servo.errorFlags &= ~DarwinSensors::Error::INPUT_VOLTAGE;
                     }
+
+                    servoState[i].presentPosition = data.servos[i].presentPosition;
+                    servoState[i].presentSpeed    = data.servos[i].presentSpeed;
+                    servoState[i].load            = data.servos[i].load;
                 }
             }
             return sensors;
