@@ -55,30 +55,33 @@ namespace behaviour {
             : Reactor(std::move(environment))
             , id(size_t(this) * size_t(this) - size_t(this))
             , falling(false)
-            // , FALLING_ANGLE(0.0f)
-            // , FALLING_ACCELERATION(0.0f)
-            // , RECOVERY_ACCELERATION()
-            , PRIORITY(0.0f)
-            , PRINT_DEBUG(false) {
+            , COM(0.0f)
+            , falling_threshold(0.0f)
+            , recovery_acceleration({0.0f, 0.0f})
+            , priority(0.0f)
+            , print_logs(false) {
 
             // do a little configurating
             on<Configuration>("FallingRelax.yaml").then([this](const Configuration& config) {
                 COM               = config["COM"].as<float>();
                 falling_threshold = config["falling_threshold"].as<float>();
 
-                // // Once the acceleration has stabalized, we are no longer falling
-                RECOVERY_ACCELERATION = config["RECOVERY_ACCELERATION"].as<std::vector<float>>();
+                // Once the acceleration has stabalized, we are no longer falling
+                recovery_acceleration = config["recovery_acceleration"].as<std::vector<float>>();
 
-                PRIORITY = config["PRIORITY"].as<float>();
+                priority = config["priority"].as<float>();
+
+                print_logs = config["print_logs"].as<bool>();
             });
 
-            on<Last<5, Trigger<Sensors>>, Single>().then(
-                [this](const std::list<std::shared_ptr<const Sensors>>& sensors) {
+            on<Last<5, Trigger<Sensors>>, Single>().then([this](
+                                                             const std::list<std::shared_ptr<const Sensors>>& sensors) {
+                if (!sensors.empty()) {
                     double falling_angle = 0.0;
                     double acc_magnitude = 0.0;
                     double gyro_mag      = 0.0;
 
-                    if (!falling && !sensors.empty()) {
+                    if (!falling) {
                         for (const auto& sensor : sensors) {
                             gyro_mag += sensor->gyroscope.squaredNorm();
                         }
@@ -89,24 +92,15 @@ namespace behaviour {
                         }
                         falling_angle = std::acos(std::abs(falling_angle / sensors.size()));
 
-                        if (PRINT_DEBUG) {
-                            log("Falling angle:",
-                                falling_angle,
-                                "Falling threshold:",
-                                falling_threshold,
-                                "Gyro magnitude:",
-                                gyro_mag);
-                        }
-
                         if (gyro_mag > ((2.0f * 9.8f / COM) * (1.0f - std::cos(falling_angle - falling_threshold)))) {
-                            if (PRINT_DEBUG) {
-                                log("value:",
+                            if (print_logs) {
+                                log("FALLING! :",
                                     ((2.0f * 9.8f / COM) * (1.0f - std::cos(falling_angle - falling_threshold))),
                                     "<",
                                     gyro_mag);
                             }
                             falling = true;
-                            updatePriority(PRIORITY);
+                            updatePriority(priority);
                         }
                     }
                     else if (falling) {
@@ -116,19 +110,28 @@ namespace behaviour {
                         acc_magnitude /= sensors.size();
 
                         // See if we recover
-                        if (acc_magnitude > RECOVERY_ACCELERATION[0] && acc_magnitude < RECOVERY_ACCELERATION[1]) {
+                        if (acc_magnitude > recovery_acceleration[0] && acc_magnitude < recovery_acceleration[1]) {
+                            if (print_logs) {
+                                log("NOT FALLING! :",
+                                    acc_magnitude,
+                                    recovery_acceleration[0],
+                                    recovery_acceleration[1]);
+                            }
                             falling = false;
                             updatePriority(0);
                         }
                     }
-                });
+                }
+            });
 
             on<Trigger<Falling>>().then([this] {
-                emit(std::make_unique<ExecuteScriptByName>(
-                    id, "Relax.yaml", NUClear::clock::now() + std::chrono::seconds(2)));
+                emit(std::make_unique<ExecuteScriptByName>(id, "Relax.yaml"));
+                // id, "Relax.yaml", NUClear::clock::now() + std::chrono::seconds(2)));
             });
 
             on<Trigger<KillFalling>>().then([this] {
+                emit(std::make_unique<ExecuteScriptByName>(
+                    id, "Relax.yaml", NUClear::clock::now() + std::chrono::seconds(2)));
                 falling = false;
                 updatePriority(0);
             });

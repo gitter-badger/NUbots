@@ -38,17 +38,11 @@ namespace behaviour {
             bool falling;
 
             /// config settings
-            float gyro_factor;
-            float threshold;
             float COM;
             float falling_threshold;
-
-            float FALLING_ACCELERATION;
-            float ACC_DEVIATION_ANGLE;
-            std::vector<float> RECOVERY_ACCELERATION;
-            float PRIORITY;
-
-            bool PRINT_DEBUG;
+            std::vector<float> recovery_acceleration;
+            float priority;
+            bool print_logs;
 
             void updatePriority(const float& priority);
 
