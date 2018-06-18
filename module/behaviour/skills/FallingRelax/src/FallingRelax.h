@@ -38,8 +38,14 @@ namespace behaviour {
             bool falling;
 
             /// config settings
-            float FALLING_ANGLE;
+            float gyro_factor;
+            float threshold;
+            float COM;
+            float falling_threshold;
+
+
             float FALLING_ACCELERATION;
+            float ACC_DEVIATION_ANGLE;
             std::vector<float> RECOVERY_ACCELERATION;
             float PRIORITY;
 

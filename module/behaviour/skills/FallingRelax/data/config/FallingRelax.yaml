@@ -1,11 +1,18 @@
-{
-  # Angle on inclination of the Z axis from the horizon
-	"FALLING_ANGLE" : 0.5,
+gyro_factor: 1
+threshold: 0.5
 
-  # Less than lower recovery accleeration limit
-	"FALLING_ACCELERATION" : 8,
+COM: 0.45
+falling_threshold: 0.785398
 
-  # Lower and upper acceleration limits
-	"RECOVERY_ACCELERATION" : [9.5, 10.5],
-	"PRIORITY" : 90
-}
+# Angle on inclination of the Z axis from the horizon
+FALLING_ANGLE: 0.5
+
+# Deviation
+ACC_DEVIATION_ANGLE: 0.75
+
+# Less than lower recovery accleeration limit
+FALLING_ACCELERATION: 8
+
+# Lower and upper acceleration limits
+RECOVERY_ACCELERATION: [9.5, 10.5]
+PRIORITY: 90
