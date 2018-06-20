@@ -41,7 +41,7 @@ namespace platform {
         class HardwareIO : public NUClear::Reactor {
         private:
             // How often we read the servos
-            static constexpr int UPDATE_FREQUENCY = 90;
+            static constexpr int UPDATE_FREQUENCY = 60;
 
             /// @brief Our internal darwin class that is used for interacting with the hardware
             Darwin::Darwin darwin;
