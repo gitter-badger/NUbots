@@ -27,6 +27,7 @@
 #include "message/behaviour/ServoCommand.h"
 #include "message/input/Sensors.h"
 #include "message/motion/GetupCommand.h"
+#include "message/motion/WalkCommand.h"
 
 #include "utility/behaviour/Action.h"
 #include "utility/input/LimbID.h"
@@ -39,6 +40,8 @@ namespace behaviour {
         using extension::ExecuteScriptByName;
 
         using message::input::Sensors;
+        using message::motion::DisableWalkEngineCommand;
+        using message::motion::EnableWalkEngineCommand;
         using message::motion::ExecuteGetup;
         using message::motion::KillGetup;
 
@@ -101,8 +104,14 @@ namespace behaviour {
                 "Get Up",
                 {std::pair<float, std::set<LimbID>>(
                     0, {LimbID::LEFT_LEG, LimbID::RIGHT_LEG, LimbID::LEFT_ARM, LimbID::RIGHT_ARM, LimbID::HEAD})},
-                [this](const std::set<LimbID>&) { emit(std::make_unique<ExecuteGetup>()); },
-                [this](const std::set<LimbID>&) { emit(std::make_unique<KillGetup>()); },
+                [this](const std::set<LimbID>&) {
+                    emit(std::make_unique<DisableWalkEngineCommand>());
+                    emit(std::make_unique<ExecuteGetup>());
+                },
+                [this](const std::set<LimbID>&) {
+                    emit(std::make_unique<KillGetup>());
+                    emit(std::make_unique<EnableWalkEngineCommand>(id));
+                },
                 [this](const std::set<ServoID>& servoSet) {
                     // HACK 2014 Jake Fountain, Trent Houliston
                     // TODO track set limbs and wait for all to finish

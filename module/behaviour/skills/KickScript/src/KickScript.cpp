@@ -43,6 +43,8 @@ namespace behaviour {
         using LimbID  = utility::input::LimbID;
         using ServoID = utility::input::ServoID;
 
+        using message::motion::DisableWalkEngineCommand;
+        using message::motion::EnableWalkEngineCommand;
         using message::motion::KickFinished;
         using message::motion::KickScriptCommand;
 
@@ -147,10 +149,20 @@ namespace behaviour {
                                "Kick Script",
                                {std::pair<float, std::set<LimbID>>(
                                    0, {LimbID::LEFT_LEG, LimbID::RIGHT_LEG, LimbID::LEFT_ARM, LimbID::RIGHT_ARM})},
-                               [this](const std::set<LimbID>&) { emit(std::make_unique<ExecuteKick>()); },
-                               [this](const std::set<LimbID>&) { emit(std::make_unique<FinishKick>()); },
-                               [this](const std::set<ServoID>&) { emit(std::make_unique<FinishKick>()); }}));
-        }
+                               [this](const std::set<LimbID>&) {
+                                   emit(std::make_unique<DisableWalkEngineCommand>());
+                                   emit(std::make_unique<ExecuteKick>());
+                               },
+                               [this](const std::set<LimbID>&) {
+                                   emit(std::make_unique<FinishKick>());
+                                   emit(std::make_unique<EnableWalkEngineCommand>(id));
+                               },
+                               [this](const std::set<ServoID>&) {
+                                   emit(std::make_unique<FinishKick>());
+                                   emit(std::make_unique<EnableWalkEngineCommand>(id));
+                               }}  // namespace skills
+                ));
+        }  // namespace behaviour
 
         void KickScript::updatePriority(const float& priority) {
             emit(std::make_unique<ActionPriorites>(ActionPriorites{id, {priority}}));
