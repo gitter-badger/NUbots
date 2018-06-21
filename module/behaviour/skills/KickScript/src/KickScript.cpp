@@ -102,11 +102,11 @@ namespace behaviour {
 
                 if (leg == LimbID::RIGHT_LEG) {
                     emit(std::make_unique<ExecuteScriptByName>(
-                        id, std::vector<std::string>({"Stand.yaml", "KickRight.yaml", "Stand.yaml"})));
+                        id, std::vector<std::string>({"Stand.yaml", "KickRight.yaml", "Stand.yaml", "Stand.yaml"})));
                 }
                 else {  // if (leg == LimbID::LEFT_LEG) {
                     emit(std::make_unique<ExecuteScriptByName>(
-                        id, std::vector<std::string>({"Stand.yaml", "KickLeft.yaml", "Stand.yaml"})));
+                        id, std::vector<std::string>({"Stand.yaml", "KickLeft.yaml", "Stand.yaml", "Stand.yaml"})));
                 }
 
                 // if (kickCommand.kickCommandType == KickType::SCRIPTED) {
